@@ -39,18 +39,6 @@ class UserSeeder extends Seeder
 
         $manager->assignRole('manager');
 
-        $sekretaris = User::create([
-            'name' => 'Sekretaris',
-            'email' => 'sekretaris@modernshoes.com',
-            'phone_number' => '08234567890',
-            'email_verified_at' => now(),
-            'password' => Hash::make("password"),
-            'photo' => 'default.jpg',
-            'gender'   => 'perempuan',
-        ]);
-
-        $sekretaris->assignRole('sekretaris');
-
         $koordinator = User::create([
             'name' => 'koordinator',
             'email' => 'koordinator@modernshoes.com',
@@ -74,6 +62,5 @@ class UserSeeder extends Seeder
         ]);
 
         $karyawan->assignRole('karyawan');
-
     }
 }

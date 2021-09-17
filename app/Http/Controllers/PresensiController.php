@@ -20,7 +20,7 @@ class PresensiController extends Controller
     {
         $this->middleware('auth');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -29,10 +29,10 @@ class PresensiController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        
+
         if ($user->hasRole('direktur')) {
             return view('admin.presensi.menuPresensi');
-        }else if ($user->hasRole('karyawan')){
+        } else if ($user->hasRole('karyawan')) {
             $data = Presensi::where('id_workers', $user->id)->get();
             return view('user.presensi.menuPresensi')->with('data', $data);
         }
@@ -45,7 +45,7 @@ class PresensiController extends Controller
         if ($user->hasRole('direktur')) {
             $data = Presensi::whereDate('created_at', now())->get();
             return view('admin.presensi.dataPresensi')->with('data', $data);
-        }else if($user->hasRole('karyawan')){
+        } else if ($user->hasRole('karyawan')) {
             $data = Presensi::where('id_workers', $user->id)->with('user')->get();
             return view('user.presensi.dataPresensi')->with('data', $data);
         }
@@ -66,15 +66,14 @@ class PresensiController extends Controller
         $user = $request->user();
 
         $check = Presensi::select('*')
-                ->where('id_workers','=',$user->id)
-                ->whereDate('created_at', Carbon::today())
-                ->get();
+            ->where('id_workers', '=', $user->id)
+            ->whereDate('created_at', Carbon::today())
+            ->get();
 
         if ($check->count() > 0) {
             Alert::warning('Perhatian!', 'Anda telah cek kehadiran hari ini');
             return redirect()->route('presensiuser');
-        }
-        else{
+        } else {
             return view('user.presensi.presensiDatang');
         }
     }
@@ -84,26 +83,24 @@ class PresensiController extends Controller
         $user = $request->user();
 
         $istirahat = Presensi::select('*')
-                ->where('id_workers','=',$user->id)
-                ->whereDate('created_at', Carbon::today())
-                ->get();
+            ->where('id_workers', '=', $user->id)
+            ->whereDate('created_at', Carbon::today())
+            ->get();
 
-            if ($istirahat->count() > 0){
-                
-                $check = $istirahat[0]->break;
-        
-                if ($check != NULL){
-                    Alert::warning('Perhatian!', 'Anda telah istirahat hari ini');
-                    return redirect()->route('presensiuser');
-                }
-                else if ($check == NULL){
-                    return view('user.presensi.presensiIstirahat')->with('istirahat', $istirahat);
-                }
-            }else {
-                Alert::warning('Perhatian!', 'Anda belum cek kehadiran hari ini');
-                return redirect()->route('presensidatang');
+        if ($istirahat->count() > 0) {
+
+            $check = $istirahat[0]->break;
+
+            if ($check != NULL) {
+                Alert::warning('Perhatian!', 'Anda telah istirahat hari ini');
+                return redirect()->route('presensiuser');
+            } else if ($check == NULL) {
+                return view('user.presensi.presensiIstirahat')->with('istirahat', $istirahat);
             }
-
+        } else {
+            Alert::warning('Perhatian!', 'Anda belum cek kehadiran hari ini');
+            return redirect()->route('presensidatang');
+        }
     }
 
     public function back(Request $request)
@@ -111,48 +108,45 @@ class PresensiController extends Controller
         $user = $request->user();
 
         $back = Presensi::select('*')
-                ->where('id_workers','=',$user->id)
-                ->whereDate('created_at', Carbon::today())
-                ->get();
+            ->where('id_workers', '=', $user->id)
+            ->whereDate('created_at', Carbon::today())
+            ->get();
 
-        if ($back->count() > 0){
+        if ($back->count() > 0) {
 
             $check = $back[0]->back;
-    
-            if ($check != NULL){
+
+            if ($check != NULL) {
                 Alert::warning('Perhatian!', 'Anda telah kembali hari ini');
                 return redirect()->route('presensiuser');
-            }
-            else if ($check == NULL){
+            } else if ($check == NULL) {
                 return view('user.presensi.presensiKembali')->with('back', $back);
             }
-        }else{
+        } else {
             Alert::warning('Perhatian!', 'Anda belum cek kehadiran hari ini');
             return redirect()->route('presensidatang');
         }
-        
     }
 
     public function checkout(Request $request)
     {
         $user = $request->user();
-        
+
         $checkout = Presensi::select('*')
-                ->where('id_workers','=',$user->id)
-                ->whereDate('created_at', Carbon::today())
-                ->get();
-        if ($checkout->count() > 0){
-            
+            ->where('id_workers', '=', $user->id)
+            ->whereDate('created_at', Carbon::today())
+            ->get();
+        if ($checkout->count() > 0) {
+
             $check = $checkout[0]->check_out;
-    
-            if ($check != NULL){
+
+            if ($check != NULL) {
                 Alert::warning('Perhatian!', 'Anda telah pulang hari ini');
                 return redirect()->route('presensiuser');
-            }
-            else if ($check == NULL){
+            } else if ($check == NULL) {
                 return view('user.presensi.presensiPulang')->with('checkout', $checkout);
             }
-        }else{
+        } else {
             Alert::warning('Perhatian!', 'Anda belum cek kehadiran hari ini');
             return redirect()->route('presensidatang');
         }
@@ -166,27 +160,25 @@ class PresensiController extends Controller
      */
     public function store(Request $request)
     {
+        dd($request->file('check_in_photo'));
         $request->validate([
             'id_workers' => 'required',
             'check_in_photo' => 'required',
-            'link_check_in' => 'required',
         ]);
 
         // CEK FOTO VALID
-        if ($request->check_in_photo->isValid()) 
-        {
-            $check_in_photo = 'Datang-'.now().$request->get('id_workers').'.'.$request->check_in_photo->extension();
+        if ($request->check_in_photo->isValid()) {
+            $check_in_photo = 'Datang-' . now() . $request->get('id_workers') . '.' . $request->check_in_photo->extension();
             $request->file('check_in_photo')->storeAs('presensi/datang', $check_in_photo, 'public');
         }
 
+        dd($check_in_photo);
+
         $ontime = "03:00:00 - 07:30:00";
 
-        if ($request->check_in > $ontime )
-        {
+        if ($request->check_in > $ontime) {
             $desc = "Terlambat";
-        }
-        else if ($request->check_in <= $ontime )
-        {
+        } else if ($request->check_in <= $ontime) {
             $desc = "Tepat Waktu";
         }
 
@@ -204,7 +196,7 @@ class PresensiController extends Controller
         $presensi->save();
 
         DB::commit();
-        
+
         Alert::success('Berhasil', 'Anda telah cek kehadiran hari ini');
         return redirect()->route('presensiuser');
     }
@@ -262,6 +254,18 @@ class PresensiController extends Controller
 
     public function updateBack(Request $request, Presensi $presensi)
     {
+        $request->validate([
+            'id_workers' => 'required',
+            'back_photo' => 'required',
+            'link_back' => 'required',
+        ]);
+
+        // CEK FOTO VALID
+        if ($request->back_photo->isValid()) {
+            $back_photo = 'Kembali-' . now() . $request->get('id_workers') . '.' . $request->back_photo->extension();
+            $request->file('back_photo')->storeAs('presensi/kembali', $back_photo, 'public');
+        }
+
         $presensi->id = $request->get('id');
         $presensi->id_workers = $request->get('id_workers');
         $presensi->check_in = $request->get('check_in');
@@ -270,6 +274,9 @@ class PresensiController extends Controller
         $presensi->link_check_in = $request->get('link_check_in');
         $presensi->break = $request->get('break');
         $presensi->back = now();
+        $presensi->back_photo = $back_photo;
+        $presensi->link_back = $request->get('link_back');
+        $presensi->location_back = $request->get('location_back');
         $presensi->updated_at = now();
 
         $presensi->save();
