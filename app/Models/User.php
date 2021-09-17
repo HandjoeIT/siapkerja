@@ -14,15 +14,11 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
-     * The attributes that are mass assignable.
+     * The attributes that aren't mass assignable.
      *
-     * @var string[]
+     * @var array
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $guarded = ['id'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -45,6 +41,15 @@ class User extends Authenticatable
 
     public function userPresensi()
     {
-        return $this->belongsToMany(Presensi::class,'id_workers');
+        return $this->belongsToMany(Presensi::class, 'id_workers');
+    }
+
+    public function userJobDetails()
+    {
+        return $this->hasMany(UserJobDetails::class, 'id_user', 'id');
+    }
+    public function userPermission()
+    {
+        return $this->belongsToMany(WorkerPermission::class, 'id_workers');
     }
 }
